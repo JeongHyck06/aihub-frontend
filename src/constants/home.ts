@@ -8,7 +8,7 @@ import type {
 export const SITE_NAVIGATION: NavigationItem[] = [
   { label: "검색", href: "/search" },
   { label: "비교", href: "/#compare" },
-  { label: "추천", href: "/#recommend" },
+  { label: "추천", href: "/recommend" },
   { label: "커뮤니티", href: "/#community" },
 ];
 
