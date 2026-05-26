@@ -1,13 +1,15 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { SITE_NAVIGATION } from "@/constants/home";
 import { cn } from "@/lib/utils";
 
 export type SiteHeaderProps = {
   activeHref?: string;
+  rightContent?: ReactNode;
 };
 
-export function SiteHeader({ activeHref }: SiteHeaderProps) {
+export function SiteHeader({ activeHref, rightContent }: SiteHeaderProps) {
   const isModelRegisterActive = activeHref === "/models/register";
 
   return (
@@ -39,7 +41,7 @@ export function SiteHeader({ activeHref }: SiteHeaderProps) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        {rightContent ?? <div className="flex items-center gap-2">
           <Button
             aria-current={isModelRegisterActive ? "page" : undefined}
             aria-label="모델 등록 페이지로 이동"
@@ -52,7 +54,7 @@ export function SiteHeader({ activeHref }: SiteHeaderProps) {
           <Button aria-label="로그인 페이지로 이동" className="h-11 px-7" href="/login">
             로그인
           </Button>
-        </div>
+        </div>}
       </div>
     </header>
   );
