@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import type { SearchResultService } from "@/types/search";
 
@@ -33,13 +34,13 @@ export function SearchResultCard({ service }: SearchResultCardProps) {
         {service.description}
       </p>
 
-      <a
+      <Link
         aria-label={`${service.name} 상세 보기`}
         className="mt-8 inline-flex h-10 items-center justify-center rounded-[10px] bg-[#ecf1ff] px-5 text-[13px] font-extrabold text-blue-600 transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
         href={service.href}
       >
         상세 보기 →
-      </a>
+      </Link>
     </Card>
   );
 }

@@ -3,8 +3,7 @@ import type { FilterGroup, SearchResultService } from "@/types/search";
 export const SEARCH_PAGE_CONTENT = {
   title: "AI 서비스 검색",
   description: "키워드와 필터를 조합해 원하는 AI 서비스를 몇 초 안에 찾아보세요.",
-  query: "코딩",
-  resultTitle: "‘코딩’ 검색 결과",
+  defaultQuery: "코딩",
   resultMeta: "총 23개 서비스 · 코딩 카테고리 · API 지원",
 };
 
@@ -68,35 +67,5 @@ export const SEARCH_RESULTS: SearchResultService[] = [
     href: "/models/chatgpt",
     badges: ["BEST MATCH"],
     bestMatch: true,
-  },
-  {
-    id: "cursor",
-    name: "Cursor",
-    provider: "Anysphere",
-    price: "Pro $20",
-    rating: 4.9,
-    reviewCount: 734,
-    description: "코드베이스 맥락을 이해하는 AI 코드 에디터",
-    href: "#cursor",
-  },
-  {
-    id: "claude-code",
-    name: "Claude Code",
-    provider: "Anthropic",
-    price: "Pro $20",
-    rating: 4.7,
-    reviewCount: 486,
-    description: "터미널에서 대규모 코드 작업을 위임하는 개발 도구",
-    href: "#claude-code",
-  },
-  {
-    id: "github-copilot",
-    name: "GitHub Copilot",
-    provider: "GitHub",
-    price: "월 $10부터",
-    rating: 4.6,
-    reviewCount: 925,
-    description: "IDE 안에서 자동완성과 코드 제안을 제공",
-    href: "#github-copilot",
   },
 ];

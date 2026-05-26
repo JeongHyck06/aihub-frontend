@@ -30,6 +30,7 @@ export function SearchInput({
         "sm:flex-row sm:items-center sm:gap-4 sm:py-3 sm:pl-7 sm:pr-3",
         className,
       )}
+      method="get"
     >
       <label className="sr-only" htmlFor={id}>
         {label}

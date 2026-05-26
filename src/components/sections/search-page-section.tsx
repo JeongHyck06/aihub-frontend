@@ -7,7 +7,18 @@ import {
   SEARCH_RESULTS,
 } from "@/constants/search";
 
-export function SearchPageSection() {
+export type SearchPageSectionProps = {
+  query?: string;
+};
+
+export function SearchPageSection({ query }: SearchPageSectionProps) {
+  const normalizedQuery = query?.trim() || SEARCH_PAGE_CONTENT.defaultQuery;
+  const resultTitle = `‘${normalizedQuery}’ 검색 결과`;
+  const resultMeta =
+    normalizedQuery === SEARCH_PAGE_CONTENT.defaultQuery
+      ? SEARCH_PAGE_CONTENT.resultMeta
+      : `총 23개 서비스 · ${normalizedQuery} 관련 검색 결과 · API 지원`;
+
   return (
     <section className="bg-[#f8f9fb]">
       <div className="mx-auto w-full max-w-[1200px] px-5 py-10 sm:py-14 lg:px-0">
@@ -23,7 +34,7 @@ export function SearchPageSection() {
           action="/search"
           buttonClassName="rounded-xl px-10 sm:w-[124px]"
           className="mt-6 min-h-16 rounded-2xl border border-[#e0e5f0] p-2 shadow-none sm:py-2 sm:pl-6 sm:pr-3"
-          defaultValue={SEARCH_PAGE_CONTENT.query}
+          defaultValue={normalizedQuery}
           id="search-page-query"
           inputClassName="font-semibold text-[#0d121a]"
           label="검색어"
@@ -37,10 +48,10 @@ export function SearchPageSection() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h2 className="text-2xl font-extrabold leading-8 text-[#0d121a]">
-                  {SEARCH_PAGE_CONTENT.resultTitle}
+                  {resultTitle}
                 </h2>
                 <p className="mt-1 text-sm font-medium leading-5 text-[#8c99ab]">
-                  {SEARCH_PAGE_CONTENT.resultMeta}
+                  {resultMeta}
                 </p>
               </div>
 
