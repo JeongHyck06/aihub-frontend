@@ -10,3 +10,11 @@ export type AdminModelRequest = {
   description: string;
   status: AdminModelRequestStatus;
 };
+
+export type AdminService = {
+  id: string;
+  name: string;
+  company: string;
+  price: string;
+  apiSupport: "지원" | "제한적" | "미지원";
+};

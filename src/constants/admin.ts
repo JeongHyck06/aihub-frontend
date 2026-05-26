@@ -1,4 +1,40 @@
-import type { AdminModelRequest } from "@/types/admin";
+import type { AdminModelRequest, AdminService } from "@/types/admin";
+
+export const ADMIN_DASHBOARD_CONTENT = {
+  title: "서비스 데이터 관리",
+  description: "초기 MVP에서는 관리자가 수동으로 AI 서비스 정보를 등록하고 수정합니다.",
+};
+
+export const ADMIN_SERVICES: AdminService[] = [
+  {
+    id: "chatgpt",
+    name: "ChatGPT",
+    company: "OpenAI",
+    price: "무료 / $20",
+    apiSupport: "지원",
+  },
+  {
+    id: "claude",
+    name: "Claude",
+    company: "Anthropic",
+    price: "무료 / $20",
+    apiSupport: "지원",
+  },
+  {
+    id: "cursor",
+    name: "Cursor",
+    company: "Anysphere",
+    price: "무료 / $20",
+    apiSupport: "제한적",
+  },
+  {
+    id: "gemini",
+    name: "Gemini",
+    company: "Google",
+    price: "무료 / 유료",
+    apiSupport: "지원",
+  },
+];
 
 export const ADMIN_APPROVAL_CONTENT = {
   title: "모델 등록 승인 관리",
