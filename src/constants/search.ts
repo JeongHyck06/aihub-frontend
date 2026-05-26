@@ -65,7 +65,7 @@ export const SEARCH_RESULTS: SearchResultService[] = [
     rating: 4.8,
     reviewCount: 1243,
     description: "범용 대화부터 코딩 보조까지 폭넓게 활용 가능",
-    href: "#chatgpt",
+    href: "/models/chatgpt",
     badges: ["BEST MATCH"],
     bestMatch: true,
   },

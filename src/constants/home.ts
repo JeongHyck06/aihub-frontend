@@ -92,7 +92,7 @@ export const POPULAR_SERVICES: PopularService[] = [
     price: "무료/Plus $20",
     rating: 4.8,
     reviewCount: 1243,
-    href: "#chatgpt",
+    href: "/models/chatgpt",
   },
   {
     rank: 2,
