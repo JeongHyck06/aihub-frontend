@@ -78,13 +78,22 @@ export function AdminDashboardSection() {
               {ADMIN_DASHBOARD_CONTENT.description}
             </p>
           </div>
-          <Button
-            className="h-[54px] rounded-[20px] px-9 text-base"
-            onClick={openCreateModal}
-            type="button"
-          >
-            등록하기
-          </Button>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              className="h-[54px] rounded-[20px] px-7 text-base"
+              href="/admin/models"
+              variant="secondary"
+            >
+              승인 관리
+            </Button>
+            <Button
+              className="h-[54px] rounded-[20px] px-9 text-base"
+              onClick={openCreateModal}
+              type="button"
+            >
+              등록하기
+            </Button>
+          </div>
         </div>
 
         {message ? (
