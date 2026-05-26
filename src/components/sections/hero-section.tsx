@@ -34,6 +34,7 @@ export function HeroSection() {
         </p>
 
         <SearchInput
+          action="/search"
           className="mt-8"
           id="hero-search"
           label="AI 서비스 검색어"
