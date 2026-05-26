@@ -37,7 +37,7 @@ export function SiteHeader({ activeHref }: SiteHeaderProps) {
           ))}
         </nav>
 
-        <Button aria-label="로그인 페이지로 이동" className="h-11 px-7" href="#login">
+        <Button aria-label="로그인 페이지로 이동" className="h-11 px-7" href="/login">
           로그인
         </Button>
       </div>
