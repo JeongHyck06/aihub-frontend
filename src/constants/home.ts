@@ -7,7 +7,7 @@ import type {
 
 export const SITE_NAVIGATION: NavigationItem[] = [
   { label: "검색", href: "/search" },
-  { label: "비교", href: "/#compare" },
+  { label: "비교", href: "/compare" },
   { label: "추천", href: "/recommend" },
   { label: "커뮤니티", href: "/community" },
 ];
@@ -110,7 +110,7 @@ export const POPULAR_SERVICES: PopularService[] = [
     price: "Pro $20",
     rating: 4.9,
     reviewCount: 734,
-    href: "#cursor",
+    href: "/models/cursor",
   },
   {
     rank: 4,

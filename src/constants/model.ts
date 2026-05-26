@@ -39,3 +39,43 @@ export const CHATGPT_DETAIL: ModelDetail = {
     },
   ],
 };
+
+export const CURSOR_DETAIL: ModelDetail = {
+  id: "cursor",
+  name: "Cursor",
+  provider: "Anysphere",
+  category: "코딩 자동화",
+  rating: 4.9,
+  reviewCount: 734,
+  heroBadges: ["코딩", "IDE 통합"],
+  description: [
+    "Cursor는 코드베이스 맥락을 이해하고 개발 작업을 도와주는 AI 코드 에디터입니다.",
+    "파일 탐색, 코드 수정, 리팩터링, 테스트 작성 같은 실제 구현 흐름에 강점이 있습니다.",
+    "Pro 플랜에서는 더 많은 AI 요청과 고성능 모델을 활용할 수 있어 팀 개발에도 적합합니다.",
+  ],
+  features: [
+    "코드베이스 전체 맥락 기반 질문과 수정",
+    "에디터 안에서 직접 적용 가능한 코드 제안",
+    "대규모 리팩터링과 반복 작업 자동화",
+    "Claude, GPT 계열 모델을 활용한 개발 보조",
+  ],
+  tags: ["코딩", "IDE", "자동화"],
+  info: [
+    { label: "가격", value: "무료 / Pro $20/월" },
+    { label: "API 지원", value: "제한적" },
+    { label: "최신 업데이트", value: "2026.05.10" },
+  ],
+  reviews: [
+    {
+      author: "프론트엔드 개발자",
+      rating: 5,
+      date: "2026.05.22",
+      body: "프로젝트 맥락을 이해하고 여러 파일을 함께 수정해줘서 실제 개발 속도가 많이 빨라졌습니다.",
+    },
+    {
+      author: "백엔드개발러",
+      rating: 4,
+      body: "리팩터링과 테스트 초안 작성에 특히 좋습니다. 다만 큰 변경 전에는 diff 확인이 꼭 필요합니다.",
+    },
+  ],
+};

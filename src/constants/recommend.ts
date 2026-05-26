@@ -51,7 +51,7 @@ export const RECOMMENDATION_RULES: Record<string, Recommendation[]> = {
       id: "cursor-claude",
       title: "Cursor + Claude",
       description: "코드베이스 이해와 실제 구현 작업에 적합합니다.",
-      href: "/search?query=Cursor",
+      href: "/models/cursor",
     },
     {
       id: "chatgpt-plus",
