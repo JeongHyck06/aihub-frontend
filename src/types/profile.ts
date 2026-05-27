@@ -9,6 +9,7 @@ export type ProfileTab = {
 };
 
 export type NotificationSetting = {
+  type: string;
   label: string;
   enabled: boolean;
 };
@@ -18,6 +19,7 @@ export type ProfileUser = {
   email: string;
   displayName: string;
   bio: string;
+  profileImageUrl?: string | null;
   stats: ProfileStat[];
   notifications: NotificationSetting[];
 };

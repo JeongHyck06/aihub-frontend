@@ -4,6 +4,7 @@ export type AuthUser = {
   email?: string;
   role?: "USER" | "ADMIN";
   displayName?: string;
+  profileImageUrl?: string | null;
 };
 
 export type AuthLoginResponse = {
@@ -54,7 +55,13 @@ export type UserProfile = {
   name: string;
   displayName: string;
   bio?: string;
+  profileImageUrl?: string | null;
   role: "USER" | "ADMIN";
+  stats?: {
+    following: number;
+    followers: number;
+    reviews: number;
+  };
 };
 
 export type UpdateProfileRequest = {
@@ -69,6 +76,7 @@ export type AuthUserApiResponse = {
   role?: "USER" | "ADMIN";
   displayName?: string;
   nickname?: string;
+  profileImageUrl?: string | null;
 };
 
 export function normalizeAuthUser(user: AuthUserApiResponse): AuthUser {
@@ -80,6 +88,7 @@ export function normalizeAuthUser(user: AuthUserApiResponse): AuthUser {
     email: user.email,
     role: user.role,
     displayName: user.displayName,
+    profileImageUrl: user.profileImageUrl ?? null,
   };
 }
 

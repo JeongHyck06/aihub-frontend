@@ -64,3 +64,10 @@ export function getAuthUser(): AuthUser | null {
 export function isAuthenticated() {
   return Boolean(getAccessToken());
 }
+
+export function setAuthSession({ user }: { user: AuthUser }) {
+  if (!canUseStorage()) {
+    return;
+  }
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+}

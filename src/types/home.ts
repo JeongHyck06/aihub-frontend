@@ -9,6 +9,7 @@ export type StatItem = {
 };
 
 export type CategoryItem = {
+  slug: string;
   title: string;
   description: string;
   serviceCount: number;
@@ -17,10 +18,24 @@ export type CategoryItem = {
 
 export type PopularService = {
   rank: number;
+  id: string;
   name: string;
   provider: string;
   price: string;
   rating: number;
   reviewCount: number;
   href: string;
+};
+
+export type HeroContent = {
+  eyebrow: string;
+  titleLines: string[];
+  description: string;
+  searchPlaceholder: string;
+};
+
+export type HomeSummary = {
+  hero: HeroContent;
+  stats: StatItem[];
+  hotKeywords: string[];
 };

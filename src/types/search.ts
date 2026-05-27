@@ -16,6 +16,8 @@ export type SearchResultService = {
   id: string;
   name: string;
   provider: string;
+  category?: string;
+  categorySlug?: string;
   price: string;
   rating: number;
   reviewCount: number;
@@ -23,4 +25,12 @@ export type SearchResultService = {
   href: string;
   badges?: string[];
   bestMatch?: boolean;
+  keywords?: string[];
+};
+
+export type SearchPageMeta = {
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
 };

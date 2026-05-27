@@ -5,5 +5,15 @@ export type RegisterGuideStep = {
 
 export type PricePolicy = {
   label: string;
-  value: string;
+  value: "FREE" | "PAID" | "FREEMIUM";
+};
+
+export type ModelRegisterRequest = {
+  serviceName: string;
+  categorySlug: string;
+  url: string;
+  pricePolicy: PricePolicy["value"];
+  description: string;
+  features: string[];
+  apiDocUrl?: string;
 };

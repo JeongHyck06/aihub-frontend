@@ -11,7 +11,25 @@ export type CompareService = {
   href: string;
 };
 
+export type CompareRowDescriptor = {
+  label: string;
+  field: keyof CompareService | string;
+  formatter?: string | null;
+};
+
 export type CompareRow = {
   label: string;
   getValue: (service: CompareService) => string;
+};
+
+export type CompareInsight = {
+  verdict: string;
+  byScenario: Array<{
+    scenario: string;
+    winner: string;
+    reason: string;
+  }>;
+  model?: string;
+  generatedAt?: string;
+  cached?: boolean;
 };

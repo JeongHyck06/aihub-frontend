@@ -5,7 +5,9 @@ export type ModelInfoItem = {
 };
 
 export type ModelReview = {
+  id?: number;
   author: string;
+  authorId?: number;
   rating: number;
   date?: string;
   body: string;
@@ -22,6 +24,8 @@ export type ModelDetail = {
   description: string[];
   features: string[];
   tags: string[];
+  tagline?: string;
   info: ModelInfoItem[];
+  externalUrl?: string;
   reviews: ModelReview[];
 };
