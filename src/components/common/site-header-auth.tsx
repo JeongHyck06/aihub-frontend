@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ProfileAvatar } from "@/features/auth/components/profile-avatar";
+import { ProfileMenu } from "@/features/auth/components/profile-menu";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 
 export type SiteHeaderAuthProps = {
@@ -24,11 +24,7 @@ export function SiteHeaderAuth({ activeHref }: SiteHeaderAuthProps) {
         >
           모델 등록
         </Button>
-        <ProfileAvatar
-          imageUrl={user.profileImageUrl ?? undefined}
-          name={user.nickname}
-          size="sm"
-        />
+        <ProfileMenu />
       </div>
     );
   }

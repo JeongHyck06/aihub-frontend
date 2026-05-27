@@ -7,23 +7,25 @@ export type ProfileSidebarProps = {
 };
 
 export function ProfileSidebar({ user }: ProfileSidebarProps) {
+  const nickname = user.displayName?.trim() || user.name;
+
   return (
     <Card className="rounded-3xl p-6 text-center lg:min-h-[640px] lg:w-[280px] lg:shrink-0">
       {user.profileImageUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          alt={`${user.name} 프로필 이미지`}
+          alt={`${nickname} 프로필 이미지`}
           className="mx-auto h-[88px] w-[88px] rounded-full object-cover"
           src={user.profileImageUrl}
         />
       ) : (
         <div
-          aria-label={`${user.name} 프로필 이미지`}
+          aria-label={`${nickname} 프로필 이미지`}
           className="mx-auto h-[88px] w-[88px] rounded-full bg-[#ecf1ff]"
           role="img"
         />
       )}
-      <h1 className="mt-4 text-[22px] font-extrabold leading-7 text-[#0d121a]">{user.name}</h1>
+      <h1 className="mt-4 text-[22px] font-extrabold leading-7 text-[#0d121a]">{nickname}</h1>
       <p className="mt-1 text-[13px] font-medium leading-5 text-[#8c99ab]">{user.email}</p>
 
       <dl className="mt-9 grid grid-cols-3 rounded-[14px] border border-[#e8edf5] bg-[#f8f9fb] px-4 py-2.5 text-left">

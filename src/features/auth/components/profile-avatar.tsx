@@ -4,17 +4,67 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
+export type ProfileAvatarSize = "sm" | "md";
+
+export type ProfileAvatarBadgeProps = {
+  name: string;
+  imageUrl?: string;
+  size?: ProfileAvatarSize;
+  className?: string;
+};
+
+const sizeClassName: Record<ProfileAvatarSize, string> = {
+  sm: "h-11 w-11 text-sm",
+  md: "h-[88px] w-[88px] text-2xl",
+};
+
+const sizePixels: Record<ProfileAvatarSize, number> = {
+  sm: 44,
+  md: 88,
+};
+
+export function ProfileAvatarBadge({
+  name,
+  imageUrl,
+  size = "sm",
+  className,
+}: ProfileAvatarBadgeProps) {
+  const initial = name.trim().charAt(0).toUpperCase() || "?";
+  const sizeClasses = sizeClassName[size];
+
+  if (imageUrl) {
+    return (
+      <Image
+        alt={`${name} 프로필 이미지`}
+        className={cn("rounded-full object-cover", sizeClasses, className)}
+        height={sizePixels[size]}
+        src={imageUrl}
+        unoptimized
+        width={sizePixels[size]}
+      />
+    );
+  }
+
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "inline-flex items-center justify-center rounded-full bg-[#ecf1ff] font-extrabold text-blue-600",
+        sizeClasses,
+        className,
+      )}
+    >
+      {initial}
+    </span>
+  );
+}
+
 export type ProfileAvatarProps = {
   name: string;
   imageUrl?: string;
   href?: string;
-  size?: "sm" | "md";
+  size?: ProfileAvatarSize;
   className?: string;
-};
-
-const sizeClassName = {
-  sm: "h-11 w-11 text-sm",
-  md: "h-[88px] w-[88px] text-2xl",
 };
 
 export function ProfileAvatar({
@@ -24,30 +74,6 @@ export function ProfileAvatar({
   size = "sm",
   className,
 }: ProfileAvatarProps) {
-  const initial = name.trim().charAt(0).toUpperCase() || "?";
-  const sizeClasses = sizeClassName[size];
-
-  const avatar = imageUrl ? (
-    <Image
-      alt={`${name} 프로필 이미지`}
-      className={cn("rounded-full object-cover", sizeClasses)}
-      height={size === "sm" ? 44 : 88}
-      src={imageUrl}
-      unoptimized
-      width={size === "sm" ? 44 : 88}
-    />
-  ) : (
-    <span
-      aria-hidden
-      className={cn(
-        "inline-flex items-center justify-center rounded-full bg-[#ecf1ff] font-extrabold text-blue-600",
-        sizeClasses,
-      )}
-    >
-      {initial}
-    </span>
-  );
-
   return (
     <Link
       aria-label={`${name} 프로필 보기`}
@@ -57,7 +83,7 @@ export function ProfileAvatar({
       )}
       href={href}
     >
-      {avatar}
+      <ProfileAvatarBadge imageUrl={imageUrl} name={name} size={size} />
     </Link>
   );
 }
