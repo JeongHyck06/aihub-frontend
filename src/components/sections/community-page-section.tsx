@@ -1,27 +1,41 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { CommunityPostCard } from "@/components/common/community-post-card";
 import { Button } from "@/components/ui/button";
-import {
-  COMMUNITY_PAGE_CONTENT,
-  COMMUNITY_POSTS,
-  COMMUNITY_TABS,
-} from "@/constants/community";
+import { COMMUNITY_PAGE_CONTENT, COMMUNITY_TABS } from "@/constants/community";
+import { useAuth } from "@/features/auth/hooks/use-auth";
+import { listCommunityPosts } from "@/shared/api";
 import { cn } from "@/lib/utils";
-import type { CommunityCategory } from "@/types/community";
+import type { CommunityCategory, CommunityPost } from "@/types/community";
 
 export function CommunityPageSection() {
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState<CommunityCategory>("all");
-  const posts = COMMUNITY_POSTS;
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredPosts = useMemo(() => {
-    if (activeTab === "all") {
-      return posts;
-    }
-
-    return posts.filter((post) => post.category === activeTab);
-  }, [activeTab, posts]);
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    listCommunityPosts({ category: activeTab, sort: "newest", size: 20 })
+      .then(({ items }) => {
+        if (cancelled) return;
+        setPosts(items);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setPosts([]);
+      })
+      .finally(() => {
+        if (cancelled) return;
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab]);
 
   return (
     <section className="bg-[#f8f9fb] py-10">
@@ -59,18 +73,28 @@ export function CommunityPageSection() {
             ))}
           </div>
 
-          <Button
-            className="h-12 rounded-[14px] px-8"
-            href="/community/write"
-          >
-            + 글쓰기
-          </Button>
+          {isAuthenticated ? (
+            <Button className="h-12 rounded-[14px] px-8" href="/community/write">
+              + 글쓰기
+            </Button>
+          ) : (
+            <Link
+              className="inline-flex h-12 items-center rounded-[14px] bg-[#ecf1ff] px-8 text-sm font-extrabold text-blue-600"
+              href="/login?next=/community/write"
+            >
+              로그인 후 글쓰기
+            </Link>
+          )}
         </div>
 
         <div className="mt-5 space-y-4">
-          {filteredPosts.map((post) => (
-            <CommunityPostCard key={post.id} post={post} />
-          ))}
+          {loading ? (
+            <p className="text-sm text-[#8c99ab]">불러오는 중...</p>
+          ) : posts.length === 0 ? (
+            <p className="text-sm text-[#8c99ab]">아직 등록된 게시글이 없습니다.</p>
+          ) : (
+            posts.map((post) => <CommunityPostCard key={post.id} post={post} />)
+          )}
         </div>
       </div>
     </section>
