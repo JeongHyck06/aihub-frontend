@@ -8,23 +8,13 @@ export const MODEL_REGISTER_CONTENT = {
     "자세한 정보 입력 시 승인 속도가 빨라집니다.\n부정확한 정보는 반려 또는 수정 요청될 수 있습니다.",
 };
 
-export const MODEL_CATEGORIES = [
-  "코딩",
-  "글쓰기",
-  "이미지",
-  "음악",
-  "영상",
-  "검색 · Q&A",
-  "기타",
-];
-
 export const PRICE_POLICIES: PricePolicy[] = [
-  { label: "무료", value: "free" },
-  { label: "유료", value: "paid" },
-  { label: "부분 유료", value: "freemium" },
+  { label: "무료", value: "FREE" },
+  { label: "유료", value: "PAID" },
+  { label: "부분 유료", value: "FREEMIUM" },
 ];
 
-export const REGISTER_GUIDE_STEPS: RegisterGuideStep[] = [
+export const FALLBACK_REGISTER_GUIDE_STEPS: RegisterGuideStep[] = [
   {
     title: "1단계 — 정보 입력 및 제출",
     description: "서비스명, 카테고리, URL, 소개글을 입력해주세요.",
