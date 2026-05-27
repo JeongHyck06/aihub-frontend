@@ -2,11 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import type { AuthUser } from "@/features/auth/types/auth.types";
-import {
-  clearAuthSession,
-  getAuthUser,
-  isAuthenticated,
-} from "@/shared/utils/auth-session";
+import { clearAuthSession, getAuthUser } from "@/shared/utils/auth-session";
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -28,7 +24,7 @@ export function useAuth() {
 
   return {
     user,
-    isAuthenticated: isAuthenticated(),
+    isAuthenticated: Boolean(user),
     isReady,
     syncSession,
     signOut,

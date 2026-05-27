@@ -47,7 +47,7 @@ export function AuthLoginSection() {
     try {
       const response = await login({ email, password });
       saveAuthSession(normalizeAuthLoginResponse(response));
-      router.push("/profile");
+      router.push("/");
     } catch (error) {
       if (error instanceof ApiError) {
         setErrorMessage(error.message);

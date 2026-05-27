@@ -1,28 +1,47 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ProfileAvatar } from "@/features/auth/components/profile-avatar";
 import { useAuth } from "@/features/auth/hooks/use-auth";
 
-export function SiteHeaderAuth() {
-  const { displayName } = useAuth();
+export type SiteHeaderAuthProps = {
+  activeHref?: string;
+};
 
-  if (displayName) {
+export function SiteHeaderAuth({ activeHref }: SiteHeaderAuthProps) {
+  const { isAuthenticated, user } = useAuth();
+  const isModelRegisterActive = activeHref === "/models/register";
+
+  if (isAuthenticated && user) {
     return (
       <div className="flex items-center gap-2">
-        <Button className="h-11 px-5" href="/models/register" variant="secondary">
+        <Button
+          aria-current={isModelRegisterActive ? "page" : undefined}
+          aria-label="모델 등록 페이지로 이동"
+          className="h-11 px-5"
+          href="/models/register"
+          variant={isModelRegisterActive ? "primary" : "secondary"}
+        >
           모델 등록
         </Button>
-        <Button className="h-11 px-7" href="/profile">
-          {displayName}
-        </Button>
+        <ProfileAvatar
+          imageUrl={user.profileImageUrl}
+          name={user.nickname}
+          size="sm"
+        />
       </div>
     );
   }
 
   return (
     <div className="flex items-center gap-2">
-      <Button className="h-11 px-5" href="/models/register" variant="secondary">
+      <Button
+        aria-current={isModelRegisterActive ? "page" : undefined}
+        aria-label="모델 등록 페이지로 이동"
+        className="h-11 px-5"
+        href="/models/register"
+        variant={isModelRegisterActive ? "primary" : "secondary"}
+      >
         모델 등록
       </Button>
       <Button aria-label="로그인 페이지로 이동" className="h-11 px-7" href="/login">

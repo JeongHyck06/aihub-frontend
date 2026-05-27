@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
+import { SiteHeaderAuth } from "@/components/common/site-header-auth";
 import { SITE_NAVIGATION } from "@/constants/home";
 import { cn } from "@/lib/utils";
 
@@ -10,8 +10,6 @@ export type SiteHeaderProps = {
 };
 
 export function SiteHeader({ activeHref, rightContent }: SiteHeaderProps) {
-  const isModelRegisterActive = activeHref === "/models/register";
-
   return (
     <header className="sticky top-0 z-40 border-b border-[#e8edf5] bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-20 w-full max-w-[1200px] items-center justify-between px-5 sm:h-24 lg:px-0">
@@ -41,20 +39,7 @@ export function SiteHeader({ activeHref, rightContent }: SiteHeaderProps) {
           ))}
         </nav>
 
-        {rightContent ?? <div className="flex items-center gap-2">
-          <Button
-            aria-current={isModelRegisterActive ? "page" : undefined}
-            aria-label="모델 등록 페이지로 이동"
-            className="h-11 px-5"
-            href="/models/register"
-            variant={isModelRegisterActive ? "primary" : "secondary"}
-          >
-            모델 등록
-          </Button>
-          <Button aria-label="로그인 페이지로 이동" className="h-11 px-7" href="/login">
-            로그인
-          </Button>
-        </div>}
+        {rightContent ?? <SiteHeaderAuth activeHref={activeHref} />}
       </div>
     </header>
   );

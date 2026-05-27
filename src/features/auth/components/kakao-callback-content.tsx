@@ -41,7 +41,7 @@ export function KakaoCallbackContent() {
         }
 
         saveAuthSession(normalizeAuthLoginResponse(response));
-        router.replace("/profile");
+        router.replace("/");
       } catch (error) {
         if (cancelled) {
           return;

@@ -54,7 +54,7 @@ export default function OAuthCallbackPage() {
         }
 
         saveAuthSession(normalizeAuthLoginResponse(response));
-        router.replace("/profile");
+        router.replace("/");
       } catch (error) {
         if (cancelled) {
           return;
