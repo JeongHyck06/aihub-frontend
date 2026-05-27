@@ -15,6 +15,11 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
       <p className="mt-2 text-base font-medium leading-6 text-[#5c697a]">
         {recommendation.description}
       </p>
+      {recommendation.reason ? (
+        <p className="mt-2 text-sm font-semibold leading-5 text-blue-600">
+          추천 이유: {recommendation.reason}
+        </p>
+      ) : null}
       <Link
         aria-label={`${recommendation.title} 자세히 보기`}
         className="mt-5 inline-flex text-sm font-extrabold text-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"

@@ -1,54 +1,93 @@
 "use client";
 
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { RecommendationCard } from "@/components/common/recommendation-card";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { RECOMMEND_PAGE_CONTENT } from "@/constants/recommend";
 import {
-  BUDGET_OPTIONS,
-  DEFAULT_RECOMMEND_CRITERIA,
-  JOB_OPTIONS,
-  PURPOSE_OPTIONS,
-  RECOMMENDATION_RULES,
-  RECOMMEND_PAGE_CONTENT,
-} from "@/constants/recommend";
-import type { RecommendCriteria, RecommendOption } from "@/types/recommend";
+  getRecommendOptions,
+  recommendNaturalLanguage,
+  recommendRuleBased,
+} from "@/shared/api";
+import type {
+  NlRecommendation,
+  RecommendCriteria,
+  RecommendOption,
+  RecommendOptions,
+  RecommendationGroup,
+} from "@/types/recommend";
+
+const FALLBACK_OPTIONS: RecommendOptions = {
+  jobs: [],
+  purposes: [],
+  budgets: [],
+  defaults: { job: "developer", purpose: "coding", budget: "under-20" },
+};
 
 export function RecommendPageSection() {
-  const [criteria, setCriteria] = useState<RecommendCriteria>(
-    DEFAULT_RECOMMEND_CRITERIA,
-  );
+  const [options, setOptions] = useState<RecommendOptions>(FALLBACK_OPTIONS);
+  const [criteria, setCriteria] = useState<RecommendCriteria>(FALLBACK_OPTIONS.defaults);
+  const [result, setResult] = useState<RecommendationGroup | null>(null);
   const [naturalLanguage, setNaturalLanguage] = useState("");
-  const [appliedCriteria, setAppliedCriteria] = useState<RecommendCriteria>(
-    DEFAULT_RECOMMEND_CRITERIA,
-  );
-  const [message, setMessage] = useState("");
+  const [nlResult, setNlResult] = useState<NlRecommendation | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  const selectedJobLabel = getOptionLabel(JOB_OPTIONS, appliedCriteria.job);
-  const selectedPurposeLabel = getOptionLabel(PURPOSE_OPTIONS, appliedCriteria.purpose);
-  const selectedBudgetLabel = getOptionLabel(BUDGET_OPTIONS, appliedCriteria.budget);
+  useEffect(() => {
+    let cancelled = false;
+    getRecommendOptions()
+      .then((data) => {
+        if (cancelled) return;
+        setOptions(data);
+        setCriteria(data.defaults);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
-  const recommendations = useMemo(
-    () => RECOMMENDATION_RULES[appliedCriteria.purpose] ?? RECOMMENDATION_RULES.coding,
-    [appliedCriteria.purpose],
-  );
-
-  const handleCriteriaSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleCriteriaSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setAppliedCriteria(criteria);
-    setMessage("선택한 조건으로 추천 결과를 갱신했습니다.");
+    setSubmitting(true);
+    setError(null);
+    try {
+      const response = await recommendRuleBased(criteria);
+      setResult(response);
+      setNlResult(null);
+      setMessage("선택한 조건으로 추천 결과를 갱신했습니다.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "추천을 가져오지 못했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handleNaturalLanguageSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleNaturalLanguageSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const nextPurpose = inferPurpose(naturalLanguage);
-    const nextBudget = naturalLanguage.includes("무료") ? "free" : criteria.budget;
-    const nextCriteria = { ...criteria, purpose: nextPurpose, budget: nextBudget };
-
-    setCriteria(nextCriteria);
-    setAppliedCriteria(nextCriteria);
-    setMessage("자연어 설명을 바탕으로 추천 조건을 반영했습니다.");
+    if (naturalLanguage.trim().length < 5) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const response = await recommendNaturalLanguage(naturalLanguage.trim());
+      setNlResult(response);
+      setCriteria({
+        job: response.interpreted.job,
+        purpose: response.interpreted.purpose,
+        budget: response.interpreted.budget,
+      });
+      setResult(null);
+      setMessage("자연어 설명을 바탕으로 추천 조건을 반영했습니다.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "추천을 가져오지 못했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const displayed = nlResult ?? result;
 
   return (
     <section className="bg-[#f8f9fb] py-12">
@@ -70,7 +109,7 @@ export function RecommendPageSection() {
               <RecommendSelect
                 label="직업"
                 onChange={(value) => setCriteria((current) => ({ ...current, job: value }))}
-                options={JOB_OPTIONS}
+                options={options.jobs}
                 value={criteria.job}
               />
               <RecommendSelect
@@ -78,7 +117,7 @@ export function RecommendPageSection() {
                 onChange={(value) =>
                   setCriteria((current) => ({ ...current, purpose: value }))
                 }
-                options={PURPOSE_OPTIONS}
+                options={options.purposes}
                 value={criteria.purpose}
               />
               <RecommendSelect
@@ -86,23 +125,27 @@ export function RecommendPageSection() {
                 onChange={(value) =>
                   setCriteria((current) => ({ ...current, budget: value }))
                 }
-                options={BUDGET_OPTIONS}
+                options={options.budgets}
                 value={criteria.budget}
               />
 
-              <Button className="h-16 w-full rounded-[22px] text-[17px]" type="submit">
-                추천 받기
+              <Button
+                className="h-16 w-full rounded-[22px] text-[17px]"
+                disabled={submitting}
+                type="submit"
+              >
+                {submitting ? "추천 받는 중..." : "추천 받기"}
               </Button>
             </form>
           </Card>
 
           <Card className="rounded-[30px] p-8 sm:p-11">
             <h2 className="text-[26px] font-extrabold leading-8 text-[#0d121a]">
-              {selectedJobLabel}에게 추천해요
+              {displayed?.title ?? "추천 조건을 선택하세요"}
             </h2>
             <p className="mt-2 text-[17px] font-medium leading-6 text-[#6b7a8f]">
-              {selectedPurposeLabel} 목적과 {selectedBudgetLabel} 조건을 기준으로
-              선정했어요.
+              {displayed?.subtitle ??
+                "직업, 사용 목적, 예산을 선택하면 룰 기반 추천이 표시됩니다."}
             </p>
 
             {message ? (
@@ -110,14 +153,20 @@ export function RecommendPageSection() {
                 {message}
               </p>
             ) : null}
+            {error ? (
+              <p className="mt-4 text-sm font-semibold text-red-500" role="alert">
+                {error}
+              </p>
+            ) : null}
 
             <div className="mt-12 space-y-8">
-              {recommendations.map((recommendation) => (
-                <RecommendationCard
-                  key={recommendation.id}
-                  recommendation={recommendation}
-                />
-              ))}
+              {displayed?.items.length ? (
+                displayed.items.map((recommendation) => (
+                  <RecommendationCard key={recommendation.id} recommendation={recommendation} />
+                ))
+              ) : (
+                <p className="text-sm text-[#8c99ab]">아직 추천 결과가 없습니다.</p>
+              )}
             </div>
           </Card>
         </div>
@@ -153,10 +202,10 @@ export function RecommendPageSection() {
           />
           <Button
             className="min-h-[64px] rounded-[20px] px-10 lg:min-h-[100px]"
-            disabled={naturalLanguage.trim().length < 5}
+            disabled={naturalLanguage.trim().length < 5 || submitting}
             type="submit"
           >
-            추천받기
+            {submitting ? "추천 받는 중..." : "추천받기"}
           </Button>
         </form>
         <p className="mt-2 text-[13px] font-medium leading-5 text-[#8c99ab]">
@@ -191,28 +240,4 @@ function RecommendSelect({ label, options, value, onChange }: RecommendSelectPro
       </select>
     </label>
   );
-}
-
-function getOptionLabel(options: RecommendOption[], value: string) {
-  return options.find((option) => option.value === value)?.label ?? value;
-}
-
-function inferPurpose(text: string) {
-  if (/이미지|아바타|디자인|그림/.test(text)) {
-    return "image";
-  }
-
-  if (/글|문서|요약|작성/.test(text)) {
-    return "writing";
-  }
-
-  if (/검색|리서치|자료|출처/.test(text)) {
-    return "research";
-  }
-
-  if (/자동화|업무|반복/.test(text)) {
-    return "automation";
-  }
-
-  return "coding";
 }
