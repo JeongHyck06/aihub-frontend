@@ -1,10 +1,19 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Modal } from "@/components/ui/modal";
-import { ADMIN_APPROVAL_CONTENT, ADMIN_MODEL_REQUESTS } from "@/constants/admin";
-import type { AdminModelRequest, AdminModelRequestStatus } from "@/types/admin";
+import { ADMIN_APPROVAL_CONTENT } from "@/constants/admin";
+import {
+  approveModelRequest,
+  getAdminModelRequests,
+  rejectModelRequest,
+} from "@/shared/api";
+import type {
+  AdminModelRequest,
+  AdminModelRequestStats,
+  AdminModelRequestStatus,
+} from "@/types/admin";
 
 const statusLabel: Record<AdminModelRequestStatus, string> = {
   pending: "대기 중",
@@ -13,55 +22,64 @@ const statusLabel: Record<AdminModelRequestStatus, string> = {
 };
 
 export function AdminModelApprovalSection() {
-  const [requests, setRequests] = useState(ADMIN_MODEL_REQUESTS);
-  const [selectedRequest, setSelectedRequest] = useState<AdminModelRequest | null>(
-    null,
-  );
+  const [requests, setRequests] = useState<AdminModelRequest[]>([]);
+  const [stats, setStats] = useState<AdminModelRequestStats>({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+  });
+  const [selectedRequest, setSelectedRequest] = useState<AdminModelRequest | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<AdminModelRequest | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
   const [message, setMessage] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const stats = useMemo(() => {
-    const approvedDelta = requests.filter(
-      (request) => request.status === "approved",
-    ).length;
-    const rejectedDelta = requests.filter(
-      (request) => request.status === "rejected",
-    ).length;
-
-    return [
-      {
-        label: "대기 중",
-        value: requests.filter((request) => request.status === "pending").length,
-        color: "text-[#f0631f]",
-      },
-      {
-        label: "승인됨",
-        value: ADMIN_APPROVAL_CONTENT.baseApprovedCount + approvedDelta,
-        color: "text-[#05754a]",
-      },
-      {
-        label: "반려됨",
-        value: ADMIN_APPROVAL_CONTENT.baseRejectedCount + rejectedDelta,
-        color: "text-[#c71515]",
-      },
-    ];
-  }, [requests]);
-
-  const pendingRequests = requests.filter((request) => request.status === "pending");
-
-  const updateStatus = (id: string, status: AdminModelRequestStatus) => {
-    const target = requests.find((request) => request.id === id);
-
-    setRequests((currentRequests) =>
-      currentRequests.map((request) =>
-        request.id === id ? { ...request, status } : request,
-      ),
-    );
-    setMessage(
-      target
-        ? `${target.serviceName} 신청을 ${statusLabel[status]} 처리했습니다.`
-        : "",
-    );
+  const refresh = async () => {
+    try {
+      const { items, stats: statsData } = await getAdminModelRequests("PENDING");
+      setRequests(items);
+      setStats(statsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "신청 목록을 불러오지 못했습니다.");
+    }
   };
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  const handleApprove = async (request: AdminModelRequest) => {
+    try {
+      await approveModelRequest(request.id);
+      setMessage(`${request.serviceName} 신청을 ${statusLabel.approved} 처리했습니다.`);
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "승인에 실패했습니다.");
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectTarget) return;
+    if (!rejectReason.trim()) {
+      setError("반려 사유를 입력해 주세요.");
+      return;
+    }
+    try {
+      await rejectModelRequest(rejectTarget.id, rejectReason.trim());
+      setMessage(`${rejectTarget.serviceName} 신청을 ${statusLabel.rejected} 처리했습니다.`);
+      setRejectTarget(null);
+      setRejectReason("");
+      refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "반려에 실패했습니다.");
+    }
+  };
+
+  const statsList = [
+    { label: "대기 중", value: stats.pending, color: "text-[#f0631f]" },
+    { label: "승인됨", value: stats.approved, color: "text-[#05754a]" },
+    { label: "반려됨", value: stats.rejected, color: "text-[#c71515]" },
+  ];
 
   return (
     <section className="bg-[#f8f9fb] py-10">
@@ -75,14 +93,12 @@ export function AdminModelApprovalSection() {
         </p>
 
         <div className="mt-5 grid gap-4 sm:grid-cols-3 lg:w-[632px]">
-          {stats.map((stat) => (
+          {statsList.map((stat) => (
             <Card className="rounded-2xl p-6" key={stat.label}>
               <p className={`text-[32px] font-extrabold leading-10 ${stat.color}`}>
                 {stat.value}
               </p>
-              <p className="text-[13px] font-medium leading-5 text-[#8c99ab]">
-                {stat.label}
-              </p>
+              <p className="text-[13px] font-medium leading-5 text-[#8c99ab]">{stat.label}</p>
             </Card>
           ))}
         </div>
@@ -92,9 +108,10 @@ export function AdminModelApprovalSection() {
             {ADMIN_APPROVAL_CONTENT.listTitle}
           </h2>
           {message ? (
-            <p className="text-sm font-semibold text-blue-600" role="status">
-              {message}
-            </p>
+            <p className="text-sm font-semibold text-blue-600" role="status">{message}</p>
+          ) : null}
+          {error ? (
+            <p className="text-sm font-semibold text-red-500" role="alert">{error}</p>
           ) : null}
         </div>
 
@@ -109,13 +126,16 @@ export function AdminModelApprovalSection() {
             </div>
 
             <div className="mt-3 space-y-4">
-              {pendingRequests.length > 0 ? (
-                pendingRequests.map((request) => (
+              {requests.length > 0 ? (
+                requests.map((request) => (
                   <ApprovalRow
                     key={request.id}
-                    onApprove={() => updateStatus(request.id, "approved")}
+                    onApprove={() => handleApprove(request)}
                     onDetail={() => setSelectedRequest(request)}
-                    onReject={() => updateStatus(request.id, "rejected")}
+                    onReject={() => {
+                      setRejectTarget(request);
+                      setRejectReason("");
+                    }}
                     request={request}
                   />
                 ))
@@ -152,8 +172,57 @@ export function AdminModelApprovalSection() {
               <dt className="font-bold text-[#0d121a]">소개</dt>
               <dd>{selectedRequest.description}</dd>
             </div>
+            <div>
+              <dt className="font-bold text-[#0d121a]">기능</dt>
+              <dd>
+                <ul className="list-disc pl-5">
+                  {selectedRequest.features.map((feature) => (
+                    <li key={feature}>{feature}</li>
+                  ))}
+                </ul>
+              </dd>
+            </div>
           </dl>
         ) : null}
+      </Modal>
+
+      <Modal
+        onClose={() => {
+          setRejectTarget(null);
+          setRejectReason("");
+        }}
+        open={rejectTarget !== null}
+        title={`${rejectTarget?.serviceName ?? ""} 반려`}
+      >
+        <div className="space-y-3">
+          <label className="block text-sm font-bold text-[#384252]">
+            반려 사유
+            <textarea
+              className="mt-1.5 min-h-[120px] w-full rounded-xl border border-[#e0e5f0] px-4 py-3 text-sm font-medium text-[#0d121a]"
+              onChange={(event) => setRejectReason(event.target.value)}
+              value={rejectReason}
+            />
+          </label>
+          <div className="flex gap-3">
+            <button
+              className="h-11 flex-1 rounded-xl bg-[#fff2f2] text-sm font-extrabold text-[#c71515]"
+              onClick={handleReject}
+              type="button"
+            >
+              반려 처리
+            </button>
+            <button
+              className="h-11 flex-1 rounded-xl border border-[#e0e5f0] bg-white text-sm font-bold text-[#384252]"
+              onClick={() => {
+                setRejectTarget(null);
+                setRejectReason("");
+              }}
+              type="button"
+            >
+              취소
+            </button>
+          </div>
+        </div>
       </Modal>
     </section>
   );
@@ -166,31 +235,16 @@ type ApprovalRowProps = {
   onDetail: () => void;
 };
 
-function ApprovalRow({
-  request,
-  onApprove,
-  onReject,
-  onDetail,
-}: ApprovalRowProps) {
+function ApprovalRow({ request, onApprove, onReject, onDetail }: ApprovalRowProps) {
   return (
     <Card className="grid min-h-20 grid-cols-[280px_180px_200px_180px_1fr] items-center rounded-xl px-6 py-4">
       <div>
-        <p className="text-[15px] font-bold leading-5 text-[#0d121a]">
-          {request.serviceName}
-        </p>
-        <p className="mt-1 text-xs font-medium leading-4 text-[#8c99ab]">
-          {request.url}
-        </p>
+        <p className="text-[15px] font-bold leading-5 text-[#0d121a]">{request.serviceName}</p>
+        <p className="mt-1 text-xs font-medium leading-4 text-[#8c99ab]">{request.url}</p>
       </div>
-      <p className="text-sm font-medium leading-5 text-[#384252]">
-        {request.category}
-      </p>
-      <p className="text-sm font-medium leading-5 text-[#384252]">
-        {request.submitter}
-      </p>
-      <p className="text-sm font-medium leading-5 text-[#384252]">
-        {request.submittedAt}
-      </p>
+      <p className="text-sm font-medium leading-5 text-[#384252]">{request.category}</p>
+      <p className="text-sm font-medium leading-5 text-[#384252]">{request.submitter}</p>
+      <p className="text-sm font-medium leading-5 text-[#384252]">{request.submittedAt}</p>
       <div className="flex gap-3">
         <button
           className="h-9 rounded-[10px] bg-[#ebfcf5] px-6 text-[13px] font-bold text-[#05754a] transition-colors hover:bg-[#d8f7e9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#05754a] focus-visible:ring-offset-2"
