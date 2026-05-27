@@ -4,7 +4,7 @@ import axios, {
   type AxiosRequestConfig,
   type InternalAxiosRequestConfig,
 } from "axios";
-import type { ApiErrorBody, ApiErrorResponse, ApiResponse } from "@/shared/types/api.types";
+import type { ApiErrorBody, ApiErrorResponse } from "@/shared/types/api.types";
 
 export class ApiError extends Error {
   code: string;
@@ -53,9 +53,12 @@ function createApiClient(): AxiosInstance {
 
   client.interceptors.response.use(
     (response) => {
-      const body = response.data as ApiResponse<unknown> | undefined;
-      if (body && "data" in body) {
-        response.data = body.data;
+      const body = response.data as
+        | { data?: unknown; meta?: unknown }
+        | undefined;
+      if (body && typeof body === "object" && "data" in body) {
+        response.data =
+          "meta" in body ? { data: body.data, meta: body.meta } : body.data;
       }
       return response;
     },
