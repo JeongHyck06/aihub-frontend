@@ -1,9 +1,17 @@
-import { PLATFORM_STATS } from "@/constants/home";
+import type { StatItem } from "@/types/home";
 
-export function StatList() {
+export type StatListProps = {
+  stats: StatItem[];
+};
+
+export function StatList({ stats }: StatListProps) {
+  if (stats.length === 0) {
+    return null;
+  }
+
   return (
     <dl className="grid rounded-[20px] border border-[#e8edf5] bg-white sm:grid-cols-2 lg:grid-cols-4">
-      {PLATFORM_STATS.map((stat, index) => (
+      {stats.map((stat, index) => (
         <div
           className="relative px-6 py-5 sm:px-10 lg:px-[60px]"
           key={stat.label}

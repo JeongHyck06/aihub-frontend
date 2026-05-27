@@ -1,23 +1,96 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
 import { FilterSidebar } from "@/components/common/filter-sidebar";
 import { SearchResultCard } from "@/components/common/search-result-card";
 import { SearchInput } from "@/components/ui/search-input";
-import {
-  SEARCH_FILTER_GROUPS,
-  SEARCH_PAGE_CONTENT,
-  SEARCH_RESULTS,
-} from "@/constants/search";
+import { SEARCH_PAGE_CONTENT } from "@/constants/search";
+import { getSearchFilters, searchServices } from "@/shared/api";
+import type {
+  FilterGroup,
+  SearchPageMeta,
+  SearchResultService,
+} from "@/types/search";
 
 export type SearchPageSectionProps = {
   query?: string;
+  category?: string;
 };
 
-export function SearchPageSection({ query }: SearchPageSectionProps) {
-  const normalizedQuery = query?.trim() || SEARCH_PAGE_CONTENT.defaultQuery;
-  const resultTitle = `‘${normalizedQuery}’ 검색 결과`;
-  const resultMeta =
-    normalizedQuery === SEARCH_PAGE_CONTENT.defaultQuery
-      ? SEARCH_PAGE_CONTENT.resultMeta
-      : `총 23개 서비스 · ${normalizedQuery} 관련 검색 결과 · API 지원`;
+type SortOption = "popular" | "rating" | "newest";
+
+export function SearchPageSection({ query, category }: SearchPageSectionProps) {
+  const normalizedQuery = query?.trim() ?? "";
+  const initialCategory = category?.trim() ?? "";
+
+  const [filters, setFilters] = useState<FilterGroup[]>([]);
+  const [results, setResults] = useState<SearchResultService[]>([]);
+  const [meta, setMeta] = useState<SearchPageMeta | null>(null);
+  const [sort, setSort] = useState<SortOption>("popular");
+  const [selectedCategory] = useState(initialCategory);
+
+  useEffect(() => {
+    let cancelled = false;
+    getSearchFilters()
+      .then((groups) => {
+        if (cancelled) return;
+        const adjusted = groups.map((group) =>
+          group.name === "categories" && selectedCategory
+            ? {
+                ...group,
+                options: group.options.map((option) =>
+                  option.value === selectedCategory
+                    ? { ...option, defaultChecked: true }
+                    : option,
+                ),
+              }
+            : group,
+        );
+        setFilters(adjusted);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    let cancelled = false;
+    searchServices({
+      query: normalizedQuery || undefined,
+      categories: selectedCategory || undefined,
+      sort,
+      page: 0,
+      size: 12,
+    })
+      .then((response) => {
+        if (cancelled) return;
+        setResults(response.data);
+        setMeta(response.meta);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setResults([]);
+        setMeta(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [normalizedQuery, selectedCategory, sort]);
+
+  const resultTitle = useMemo(() => {
+    if (normalizedQuery) return `'${normalizedQuery}' 검색 결과`;
+    if (selectedCategory) return `'${selectedCategory}' 카테고리 결과`;
+    return "AI 서비스 전체";
+  }, [normalizedQuery, selectedCategory]);
+
+  const resultMeta = useMemo(() => {
+    const total = meta?.totalElements ?? results.length;
+    const segments: string[] = [`총 ${total}개 서비스`];
+    if (selectedCategory) segments.push(`카테고리: ${selectedCategory}`);
+    if (normalizedQuery) segments.push(`검색어: ${normalizedQuery}`);
+    return segments.join(" · ");
+  }, [meta, results.length, selectedCategory, normalizedQuery]);
 
   return (
     <section className="bg-[#f8f9fb]">
@@ -42,7 +115,7 @@ export function SearchPageSection({ query }: SearchPageSectionProps) {
         />
 
         <div className="mt-10 flex flex-col gap-6 lg:flex-row lg:items-start">
-          <FilterSidebar groups={SEARCH_FILTER_GROUPS} />
+          <FilterSidebar groups={filters} />
 
           <div className="min-w-0 flex-1">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -60,19 +133,24 @@ export function SearchPageSection({ query }: SearchPageSectionProps) {
               </label>
               <select
                 className="h-9 w-[140px] rounded-[10px] border border-[#e0e5f0] bg-white px-3 text-[13px] font-bold text-[#384252] focus:outline-none focus:ring-2 focus:ring-blue-600"
-                defaultValue="popular"
                 id="sort-results"
+                onChange={(event) => setSort(event.target.value as SortOption)}
+                value={sort}
               >
                 <option value="popular">인기순</option>
                 <option value="rating">평점순</option>
-                <option value="review">리뷰순</option>
+                <option value="newest">최신순</option>
               </select>
             </div>
 
             <div className="mt-5 grid gap-5 xl:grid-cols-2">
-              {SEARCH_RESULTS.map((service) => (
-                <SearchResultCard key={service.id} service={service} />
-              ))}
+              {results.length === 0 ? (
+                <p className="text-sm text-[#8c99ab]">검색 결과가 없습니다.</p>
+              ) : (
+                results.map((service) => (
+                  <SearchResultCard key={service.id} service={service} />
+                ))
+              )}
             </div>
           </div>
         </div>

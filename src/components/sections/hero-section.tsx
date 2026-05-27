@@ -1,8 +1,31 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Chip } from "@/components/ui/chip";
 import { SearchInput } from "@/components/ui/search-input";
-import { HERO_CONTENT, HOT_SEARCH_KEYWORDS } from "@/constants/home";
+import { getHomeSummary } from "@/shared/api";
+import type { HomeSummary } from "@/types/home";
 
 export function HeroSection() {
+  const [summary, setSummary] = useState<HomeSummary | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getHomeSummary()
+      .then((data) => {
+        if (!cancelled) {
+          setSummary(data);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const hero = summary?.hero;
+  const keywords = summary?.hotKeywords ?? [];
+
   return (
     <section className="relative overflow-hidden bg-blue-600" id="search">
       <div
@@ -17,12 +40,12 @@ export function HeroSection() {
       <div className="relative mx-auto flex min-h-[480px] w-full max-w-[1200px] flex-col justify-center px-5 py-16 lg:px-0">
         <div className="inline-flex h-8 w-fit items-center rounded-2xl bg-white/15 px-4">
           <span className="text-xs font-extrabold leading-none text-white">
-            {HERO_CONTENT.eyebrow}
+            {hero?.eyebrow ?? "AI 서비스 탐색 플랫폼"}
           </span>
         </div>
 
         <h1 className="mt-5 text-[42px] font-extrabold leading-[1.12] tracking-tight text-white sm:text-[56px] lg:text-[64px]">
-          {HERO_CONTENT.title.map((line) => (
+          {(hero?.titleLines ?? ["더 나은 AI를", "찾는 가장 빠른 방법"]).map((line) => (
             <span className="block" key={line}>
               {line}
             </span>
@@ -30,7 +53,7 @@ export function HeroSection() {
         </h1>
 
         <p className="mt-5 max-w-3xl text-base font-medium leading-7 text-white/85 sm:text-lg">
-          {HERO_CONTENT.description}
+          {hero?.description ?? ""}
         </p>
 
         <SearchInput
@@ -38,23 +61,25 @@ export function HeroSection() {
           className="mt-8"
           id="hero-search"
           label="AI 서비스 검색어"
-          placeholder={HERO_CONTENT.searchPlaceholder}
+          placeholder={hero?.searchPlaceholder ?? "AI 서비스를 검색하세요"}
         />
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <p className="mr-3 text-[13px] font-bold leading-5 text-white/70">
-            인기 검색어
-          </p>
-          {HOT_SEARCH_KEYWORDS.map((keyword, index) => (
-            <Chip
-              active={index === 0}
-              aria-label={`${keyword} 검색어로 검색`}
-              key={keyword}
-            >
-              # {keyword}
-            </Chip>
-          ))}
-        </div>
+        {keywords.length > 0 ? (
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <p className="mr-3 text-[13px] font-bold leading-5 text-white/70">
+              인기 검색어
+            </p>
+            {keywords.map((keyword, index) => (
+              <Chip
+                active={index === 0}
+                aria-label={`${keyword} 검색어로 검색`}
+                key={keyword}
+              >
+                # {keyword}
+              </Chip>
+            ))}
+          </div>
+        ) : null}
       </div>
     </section>
   );
