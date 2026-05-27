@@ -6,17 +6,31 @@ import { useAuth } from "@/features/auth/hooks/use-auth";
 
 type RequireAuthProps = {
   children: ReactNode;
+  requireAdmin?: boolean;
+  redirectTo?: string;
 };
 
-export function RequireAuth({ children }: RequireAuthProps) {
+export function RequireAuth({
+  children,
+  requireAdmin = false,
+  redirectTo = "/login",
+}: RequireAuthProps) {
   const router = useRouter();
-  const { isAuthenticated, isReady } = useAuth();
+  const { isAuthenticated, isReady, user } = useAuth();
+
+  const isAdmin = user?.role === "ADMIN";
+  const hasAccess = isAuthenticated && (!requireAdmin || isAdmin);
 
   useEffect(() => {
-    if (isReady && !isAuthenticated) {
-      router.replace("/login");
+    if (!isReady) return;
+    if (!isAuthenticated) {
+      router.replace(redirectTo);
+      return;
     }
-  }, [isAuthenticated, isReady, router]);
+    if (requireAdmin && !isAdmin) {
+      router.replace("/");
+    }
+  }, [isAuthenticated, isAdmin, isReady, redirectTo, requireAdmin, router]);
 
   if (!isReady) {
     return (
@@ -26,7 +40,7 @@ export function RequireAuth({ children }: RequireAuthProps) {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!hasAccess) {
     return null;
   }
 

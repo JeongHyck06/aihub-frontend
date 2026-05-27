@@ -1,7 +1,6 @@
 import { apiPost } from "@/shared/api/client";
 import type {
   AuthLoginApiResponse,
-  EmailVerifyResult,
   KakaoLoginRequest,
   LoginRequest,
   RefreshTokenRequest,
@@ -46,5 +45,5 @@ export function sendEmailCode(email: string) {
 }
 
 export function verifyEmail(email: string, code: string) {
-  return apiPost<EmailVerifyResult>("/auth/email/verify", { email, code });
+  return apiPost<AuthLoginApiResponse>("/auth/email/verify", { email, code });
 }

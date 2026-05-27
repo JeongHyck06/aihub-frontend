@@ -25,7 +25,7 @@ export function SiteHeaderAuth({ activeHref }: SiteHeaderAuthProps) {
           모델 등록
         </Button>
         <ProfileAvatar
-          imageUrl={user.profileImageUrl}
+          imageUrl={user.profileImageUrl ?? undefined}
           name={user.nickname}
           size="sm"
         />
