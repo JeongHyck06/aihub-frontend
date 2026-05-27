@@ -2,20 +2,27 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { AuthField } from "@/components/common/auth-field";
 import { Button } from "@/components/ui/button";
+import { ApiError, signup } from "@/shared/api";
 
 export function AuthSignupSection() {
   const router = useRouter();
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSignup = (event: FormEvent<HTMLFormElement>) => {
+  const handleSignup = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setErrorMessage("");
 
     const formData = new FormData(event.currentTarget);
+    const name = String(formData.get("name") ?? "");
     const email = String(formData.get("email") ?? "");
     const password = String(formData.get("password") ?? "");
     const passwordConfirm = String(formData.get("passwordConfirm") ?? "");
+    const agreeTerms = formData.get("terms") === "on";
+    const agreeMarketing = formData.get("marketing") === "on";
 
     if (password !== passwordConfirm) {
       event.currentTarget
@@ -28,7 +35,33 @@ export function AuthSignupSection() {
     event.currentTarget
       .querySelector<HTMLInputElement>("#signup-password-confirm")
       ?.setCustomValidity("");
-    router.push(`/email-verify?email=${encodeURIComponent(email)}`);
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await signup({
+        name,
+        email,
+        password,
+        agreeTerms,
+        agreeMarketing,
+      });
+
+      const params = new URLSearchParams({ email: result.email });
+      if (result.devCode) {
+        params.set("devCode", result.devCode);
+      }
+
+      router.push(`/email-verify?${params.toString()}`);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setErrorMessage(error.message);
+      } else {
+        setErrorMessage("회원가입에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -52,6 +85,7 @@ export function AuthSignupSection() {
         <form className="mt-9 space-y-4" onSubmit={handleSignup}>
           <AuthField
             autoComplete="name"
+            disabled={isSubmitting}
             id="signup-name"
             label="이름"
             name="name"
@@ -60,6 +94,7 @@ export function AuthSignupSection() {
           />
           <AuthField
             autoComplete="email"
+            disabled={isSubmitting}
             id="signup-email"
             label="이메일"
             name="email"
@@ -69,6 +104,7 @@ export function AuthSignupSection() {
           />
           <AuthField
             autoComplete="new-password"
+            disabled={isSubmitting}
             id="signup-password"
             label="비밀번호"
             minLength={8}
@@ -79,6 +115,7 @@ export function AuthSignupSection() {
           />
           <AuthField
             autoComplete="new-password"
+            disabled={isSubmitting}
             id="signup-password-confirm"
             label="비밀번호 확인"
             minLength={8}
@@ -92,6 +129,7 @@ export function AuthSignupSection() {
             <label className="flex items-center gap-2 text-[13px] font-medium leading-5 text-[#616e80]">
               <input
                 className="h-[18px] w-[18px] rounded border-[#e0e5f0] text-blue-600 focus:ring-blue-600"
+                disabled={isSubmitting}
                 name="terms"
                 required
                 type="checkbox"
@@ -101,6 +139,7 @@ export function AuthSignupSection() {
             <label className="flex items-center gap-2 text-[13px] font-medium leading-5 text-[#8c99ab]">
               <input
                 className="h-[18px] w-[18px] rounded border-[#e0e5f0] text-blue-600 focus:ring-blue-600"
+                disabled={isSubmitting}
                 name="marketing"
                 type="checkbox"
               />
@@ -108,9 +147,18 @@ export function AuthSignupSection() {
             </label>
           </div>
 
-          {/* TODO: 회원가입 API가 준비되면 실제 가입 mutation 후 인증 페이지로 이동합니다. */}
-          <Button className="h-14 w-full rounded-[14px]" type="submit">
-            이메일로 가입하기
+          {errorMessage ? (
+            <p className="text-sm font-semibold text-red-600" role="alert">
+              {errorMessage}
+            </p>
+          ) : null}
+
+          <Button
+            className="h-14 w-full rounded-[14px]"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? "가입 처리 중…" : "이메일로 가입하기"}
           </Button>
         </form>
 

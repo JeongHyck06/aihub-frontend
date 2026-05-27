@@ -21,7 +21,7 @@ export const SIGNUP_BRAND_CONTENT: AuthBrandContent = {
 };
 
 export const SOCIAL_PROVIDERS: SocialProvider[] = [
-  { label: "Google로 계속하기", iconLabel: "Google", variant: "light" },
-  { label: "GitHub로 계속하기", iconLabel: "GH", variant: "dark" },
-  { label: "카카오로 계속하기", iconLabel: "K", variant: "kakao" },
+  { id: "google", label: "Google로 계속하기", iconLabel: "Google", variant: "light" },
+  { id: "github", label: "GitHub로 계속하기", iconLabel: "GH", variant: "dark" },
+  { id: "kakao", label: "카카오로 계속하기", iconLabel: "K", variant: "kakao" },
 ];
